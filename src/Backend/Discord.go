@@ -1,7 +1,7 @@
 package Backend
 
 import (
-	"antegral.net/chatanium/src/Runtime/Interface"
+	IChatanium "antegral.net/chatanium/src/Runtime/Interface"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -10,7 +10,24 @@ type Discord struct {
 	key string
 }
 
-func (t *Discord) Init(Info Interface.ModuleInfo) error {
+func (t *Discord) Init(Info IChatanium.ModuleInfo) error {
+	return nil
+}
+
+func (t *Discord) SetCredentials(Credentials ...string) error {
+	for i, v := range Credentials {
+		switch i {
+		case 0:
+			t.key = v
+			break
+		default:
+			break
+		}
+	}
+	return nil
+}
+
+func (t *Discord) Connect() error {
 	api, err := discordgo.New("Bot " + "authentication token")
 	if err != nil {
 		return err
@@ -18,7 +35,4 @@ func (t *Discord) Init(Info Interface.ModuleInfo) error {
 
 	t.Api = api
 	return nil
-}
-
-func (t *Discord) MakeSession() {
 }
