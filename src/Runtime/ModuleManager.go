@@ -1,12 +1,14 @@
 package runtime
 
 import (
+	"os"
+
 	Backends "antegral.net/chatanium/src/Backend"
-	"antegral.net/chatanium/src/Runtime/Interface"
+	IChatanium "antegral.net/chatanium/src/Runtime/Interface"
 	"antegral.net/chatanium/src/Runtime/Log"
 )
 
-func CallModule(Module *ChataniumModule) {
+func StartModule(Module *IChatanium.Module) *IChatanium.Module {
 	if err := Module.OnInit(); err != nil {
 		Log.Error.Printf("Runtime > Some Module occurred Error during OnInit()")
 		Log.Error.Fatalln(err)
@@ -18,32 +20,28 @@ func CallModule(Module *ChataniumModule) {
 		Log.Error.Fatalln(err)
 	}
 
-	// TODO: 모듈과 런타임간 통신을 위해 모듈에 대한 채널 반환
+	return Module
 }
 
-func GetBackend(BackendType string, Module Interface.ModuleInfo) *Interface.ChataniumBackend {
+func GetBackend(BackendType string, Module IChatanium.ModuleInfo) *IChatanium.Backend {
 	Log.Info.Print(Module.Name, " > Access granted to backend")
+
 	switch BackendType {
 	case "discord":
-		return &Backends.Discord{}
+		backend := Backends.Discord{}
+		backend.Init(Module)
+		// TODO: 모듈에서 Credential을 알 수 없게 privately하게 짜기
+		// DotEnv는 모듈측에서 os.Getenv로 읽을 수 있으므로 사용 할 수 없음.
+		// 1. 경로 방식으로 privately하게 env 파일을 가져오고 로컬에서만 쓰면 되지 않을까?
+		// 1-1. 프로그램 실행 인수로 암호화된 env 파일의 key를 가져오게?
+		backend.SetCredentials(os.Getenv())
+		backend.Connect()
+		return &backend
 		break
 	default:
-		Log.Error.Fatal(Module.Name, " > Unknown backend: ", BackendType)
-		return nil
 		break
 	}
+
+	Log.Error.Fatal(Module.Name, " > Unknown backend: ", BackendType)
+	return nil
 }
-
-type ChataniumModule struct {
-	Info Interface.ModuleInfo
-}
-
-func (t *ChataniumModule) OnInit() error
-
-func (t *ChataniumModule) OnStart() error
-
-func (t *ChataniumModule) GetInfo() *Interface.ModuleInfo
-
-func (t *ChataniumModule) GetBackend(Backend Interface.ChataniumBackend) error
-
-func (t *ChataniumModule) OnMessage(Request string) Interface.ModuleResponse

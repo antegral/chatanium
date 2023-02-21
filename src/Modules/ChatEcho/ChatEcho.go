@@ -1,7 +1,7 @@
 package ChatEcho
 
 import (
-	"antegral.net/chatanium/src/Runtime/Interface"
+	IChatanium "antegral.net/chatanium/src/Runtime/Interface"
 	"antegral.net/chatanium/src/Runtime/Log"
 	"github.com/bwmarrin/discordgo"
 )
@@ -43,8 +43,8 @@ func (t *Module) OnStart() error {
 	return nil
 }
 
-func (t *Module) GetInfo() *Interface.ModuleInfo {
-	return &Interface.ModuleInfo{
+func (t *Module) GetInfo() *IChatanium.ModuleInfo {
+	return &IChatanium.ModuleInfo{
 		Name:        t.Name,
 		Description: t.Description,
 		Version:     t.Version,
@@ -53,6 +53,5 @@ func (t *Module) GetInfo() *Interface.ModuleInfo {
 	}
 }
 
-func (t *Module) OnMessage(Request string) Interface.ModuleResponse {
-	return nil
+func (t *Module) OnMessage(Message IChatanium.ModuleRequest, IsFinished chan bool) {
 }
