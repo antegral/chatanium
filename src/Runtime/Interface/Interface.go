@@ -1,4 +1,4 @@
-package Interface
+package IChatanium
 
 type ModuleInfo struct {
 	Name        string
@@ -23,10 +23,26 @@ type ModuleRequest struct {
 	Message IncomingMessage
 }
 
-type ModuleResponse error
+type ModuleChannel chan string
 
-type ChataniumBackend struct{}
+type Module struct {
+	Info ModuleInfo
+}
 
-func (t *ChataniumBackend) Init(Info ModuleInfo) error
+func (t *Module) OnInit() error
 
-func (t *ChataniumBackend) MakeSession()
+func (t *Module) OnStart() error
+
+func (t *Module) GetInfo() *ModuleInfo
+
+func (t *Module) GetBackend(Backend Backend) error
+
+func (t *Module) OnMessage(Request string) ModuleChannel
+
+type Backend struct{}
+
+func (t *Backend) Init(Info ModuleInfo) error
+
+func (t *Backend) SetCredentials(Credentials ...string) error
+
+func (t *Backend) Connect() error
