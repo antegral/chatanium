@@ -25,24 +25,16 @@ type ModuleRequest struct {
 
 type ModuleChannel chan string
 
-type Module struct {
-	Info ModuleInfo
+type Module interface {
+	OnInit() error
+	OnStart() error
+	GetInfo() *ModuleInfo
+	GetBackend(Backend Backend) error
+	OnMessage(Request string) ModuleChannel
 }
 
-func (t *Module) OnInit() error
-
-func (t *Module) OnStart() error
-
-func (t *Module) GetInfo() *ModuleInfo
-
-func (t *Module) GetBackend(Backend Backend) error
-
-func (t *Module) OnMessage(Request string) ModuleChannel
-
-type Backend struct{}
-
-func (t *Backend) Init(Info ModuleInfo) error
-
-func (t *Backend) SetCredentials(Credentials ...string) error
-
-func (t *Backend) Connect() error
+type Backend interface {
+	Init(Info ModuleInfo) error
+	SetCredentials(Credentials ...string) error
+	Connect() error
+}

@@ -8,7 +8,7 @@ import (
 	"antegral.net/chatanium/src/Runtime/Log"
 )
 
-func StartModule(Module *IChatanium.Module) *IChatanium.Module {
+func StartModule(Module IChatanium.Module) IChatanium.Module {
 	if err := Module.OnInit(); err != nil {
 		Log.Error.Printf("Runtime > Some Module occurred Error during OnInit()")
 		Log.Error.Fatalln(err)
@@ -23,7 +23,7 @@ func StartModule(Module *IChatanium.Module) *IChatanium.Module {
 	return Module
 }
 
-func GetBackend(BackendType string, Module IChatanium.ModuleInfo) *IChatanium.Backend {
+func GetBackend(BackendType string, Module IChatanium.ModuleInfo) IChatanium.Backend {
 	Log.Info.Print(Module.Name, " > Access granted to backend")
 
 	switch BackendType {
