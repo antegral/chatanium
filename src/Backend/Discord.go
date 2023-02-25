@@ -36,3 +36,7 @@ func (t *Discord) Connect() error {
 	t.Api = api
 	return nil
 }
+
+type Requirements struct {
+	BACKEND_KEY string
+}
