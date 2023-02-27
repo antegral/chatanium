@@ -2,7 +2,9 @@ package Module
 
 import (
 	"os"
+	"path/filepath"
 	"plugin"
+	"strings"
 
 	IChatanium "antegral.net/chatanium/src/Runtime/Interface"
 	"antegral.net/chatanium/src/Runtime/Log"
@@ -65,4 +67,39 @@ func Start(Module IChatanium.Module) IChatanium.Module {
 	}
 
 	return Module
+}
+
+func Search(FolderPath string) []IChatanium.Module {
+	var Modules []IChatanium.Module
+
+	Entries, err := os.ReadDir("./")
+	if err != nil {
+		Log.Error.Printf("ChataniumRuntime > Module.Search() failure")
+		Log.Error.Fatalln(err)
+	}
+
+	for _, e := range Entries {
+		IsDLL := strings.HasSuffix(e.Name(), ".dll")
+		IsSO := strings.HasSuffix(e.Name(), ".so")
+
+		if !IsDLL && !IsSO {
+			Log.Verbose.Printf("Search() > Not a valid extension. Ignored. (%s)", e.Name())
+			continue
+		} else {
+			Module := Get(filepath.Join(FolderPath, e.Name()))
+			Modules = append(Modules, Module)
+		}
+	}
+
+	return Modules
+}
+
+func StartAllModules(FolderPath string) []IChatanium.Module {
+	Modules := Search(FolderPath)
+
+	for _, e := range Modules {
+		Start(e)
+	}
+
+	return Modules
 }
