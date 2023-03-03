@@ -1,7 +1,9 @@
 package Module
 
 import (
+	"errors"
 	"fmt"
+	"math"
 	"math/rand"
 	"net"
 	"net/rpc"
@@ -27,8 +29,13 @@ func Connect(Port uint16) error {
 	}
 }
 
-func DeployBackend(Name string, Backend IChatanium.Backend) error {
-	Port := rand.Intn(65535-1) + 1
+func DeployBackend(Name string, Backend IChatanium.Backend) (error, uint16) {
+	var Random interface{} = rand.Intn(math.MaxUint16) + 1
+	Port, ok := Random.(uint16)
+
+	if ok != true {
+		return errors.New("The automatically created port number does not fit the port range. Please try again."), 0
+	}
 
 	Log.Verbose.Printf("Deploying Backend: %s", Name)
 
@@ -39,17 +46,18 @@ func DeployBackend(Name string, Backend IChatanium.Backend) error {
 		Tags:        nil,
 		Commands:    nil,
 	}); err != nil {
-		return err
+		return err, 0
 	}
 
 	if err := Backend.Connect(); err != nil {
-		return err
+		return err, 0
 	}
 
 	rpc.Register(Backend)
 
 	l, err := net.Listen("tcp", fmt.Sprintf(":%v", &Port))
 	if err != nil {
+		return err, 0
 	}
 	defer l.Close()
 
@@ -57,4 +65,6 @@ func DeployBackend(Name string, Backend IChatanium.Backend) error {
 		conn, _ := l.Accept()
 		go rpc.ServeConn(conn)
 	}
+
+	return nil, Port
 }
