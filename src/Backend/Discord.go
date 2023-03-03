@@ -6,11 +6,13 @@ import (
 )
 
 type Discord struct {
-	Api *discordgo.Session
-	key string
+	Name string
+	Api  *discordgo.Session
+	key  string
 }
 
 func (t *Discord) Init(Info IChatanium.ModuleInfo) error {
+	t.Name = "Discord"
 	return nil
 }
 
