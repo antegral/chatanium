@@ -1,12 +1,13 @@
 package Module
 
 import (
-	"flag"
 	"fmt"
+	"math/rand"
 	"net"
 	"net/rpc"
 
 	IChatanium "antegral.net/chatanium/src/Runtime/Interface"
+	"antegral.net/chatanium/src/Runtime/Log"
 )
 
 func Connect(Port uint16) error {
@@ -26,11 +27,26 @@ func Connect(Port uint16) error {
 	}
 }
 
-func Listen() {
-	rpc.Register()
+func DeployBackend(Name string, Backend IChatanium.Backend) error {
+	Port := rand.Intn(65535-1) + 1
 
-	Port := flag.Int("port", 27493, "port")
-	flag.Parse()
+	Log.Verbose.Printf("Deploying Backend: %s", Name)
+
+	if err := Backend.Init(IChatanium.ModuleInfo{
+		Name:        "",
+		Description: "",
+		Version:     "1.0.0",
+		Tags:        nil,
+		Commands:    nil,
+	}); err != nil {
+		return err
+	}
+
+	if err := Backend.Connect(); err != nil {
+		return err
+	}
+
+	rpc.Register(Backend)
 
 	l, err := net.Listen("tcp", fmt.Sprintf(":%v", &Port))
 	if err != nil {
