@@ -5,6 +5,9 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// A chat backend adapter for Discord.
+//
+// An implementation of the IChatanium.Backend interface.
 type Discord struct {
 	Name string
 	Api  *discordgo.Session
@@ -30,7 +33,7 @@ func (t *Discord) SetCredentials(Credentials ...string) error {
 }
 
 func (t *Discord) Connect() error {
-	api, err := discordgo.New("Bot " + "authentication token")
+	api, err := discordgo.New("Bot " + t.key)
 	if err != nil {
 		return err
 	}
