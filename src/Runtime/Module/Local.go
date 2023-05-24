@@ -10,6 +10,11 @@ import (
 	"antegral.net/chatanium/src/Runtime/Log"
 )
 
+/**
+ * @brief      Gets a module.
+ * @param      FilePath  The file path
+ * @return     The module.
+ */
 func Get(FilePath string) IChatanium.Module {
 	Log.Verbose.Printf("Getting module: %s", FilePath)
 
@@ -51,14 +56,29 @@ func Get(FilePath string) IChatanium.Module {
 	return ChataniumModule
 }
 
+/**
+ * @brief      Starts a module.
+ * @param      Module  The module
+ * @return     The module.
+ */
 func Start(Module IChatanium.Module) IChatanium.Module {
-	Log.Verbose.Printf("Starting module: %s", Module.GetInfo().Name)
+	// Starting a module is a 2-step process:
+	// 1. OnInit() - This is where the module is initialized. This is where the module should do any initialization work.
+	// 2. OnStart() - This is where the module is started. This is where the module should start any background processes.
+
+	// Get the name of the module
+	Name := Module.GetInfo().Name
+
+	Log.Verbose.Printf("Starting module: %s", Name)
+
+	// Trigger: OnInit() of the Module
 	if err := Module.OnInit(); err != nil {
-		Log.Error.Printf("%s > OnInit() failure")
+		Log.Error.Printf("%s > OnInit() failure", Name)
 		Log.Error.Fatalln(err)
 		return nil
 	}
 
+	// Trigger: OnStart() of the Module
 	if err := Module.OnStart(); err != nil {
 		Info := Module.GetInfo()
 		Log.Error.Printf(Info.Name, " > OnStart() failure")
@@ -69,9 +89,18 @@ func Start(Module IChatanium.Module) IChatanium.Module {
 	return Module
 }
 
+/**
+ * @brief      Searches for modules.
+ * @param      FolderPath  The folder path
+ * @return     All modules in the folder.
+ */
 func Search(FolderPath string) []IChatanium.Module {
+	Log.Verbose.Printf("Searching for modules in: %s", FolderPath)
+
+	// all modules in the folder
 	var Modules []IChatanium.Module
 
+	// get all entries in the folder
 	Entries, err := os.ReadDir("./")
 	if err != nil {
 		Log.Error.Printf("ChataniumRuntime > Module.Search() failure")
@@ -79,25 +108,37 @@ func Search(FolderPath string) []IChatanium.Module {
 	}
 
 	for _, e := range Entries {
+		// check if the file is a DLL or SO
 		IsDLL := strings.HasSuffix(e.Name(), ".dll")
 		IsSO := strings.HasSuffix(e.Name(), ".so")
 
 		if !IsDLL && !IsSO {
+			// not a valid extension
 			Log.Verbose.Printf("Search() > Not a valid extension. Ignored. (%s)", e.Name())
 			continue
-		} else {
-			Module := Get(filepath.Join(FolderPath, e.Name()))
-			Modules = append(Modules, Module)
 		}
+
+		// get the module
+		Module := Get(filepath.Join(FolderPath, e.Name()))
+
+		// add to the list of modules
+		Modules = append(Modules, Module)
 	}
 
 	return Modules
 }
 
+/**
+ * @brief      Searches for all modules in the given folder and starts them.
+ * @param      FolderPath  The folder path
+ * @return     All modules.
+ */
 func StartAllModules(FolderPath string) []IChatanium.Module {
+	// get all modules
 	Modules := Search(FolderPath)
 
 	for _, e := range Modules {
+		// start the module
 		Start(e)
 	}
 

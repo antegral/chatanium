@@ -1,5 +1,8 @@
 package IChatanium
 
+// Fill in the information for the module. Make it recognizable to users.
+//
+// This is the interface that all modules must implement.
 type ModuleInfo struct {
 	Name        string
 	Description string
@@ -8,6 +11,9 @@ type ModuleInfo struct {
 	Commands    []string
 }
 
+// runtime executes the functions of the interface in context.
+//
+// This is the interface that all modules must implement.
 type Module interface {
 	OnInit() error
 	OnStart() error

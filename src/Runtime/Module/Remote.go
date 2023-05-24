@@ -12,6 +12,7 @@ import (
 	"antegral.net/chatanium/src/Runtime/Log"
 )
 
+// TODO: Implementing Remote module working on RPC
 func Connect(Port uint16) error {
 	Client, err := rpc.Dial("tcp", fmt.Sprintf("127.0.0.1:%v", &Port))
 	if err != nil {
@@ -58,14 +59,12 @@ func DeployBackend(RemoteModuleInfo IChatanium.ModuleInfo, Backend IChatanium.Ba
 	if err != nil {
 		return 0, err
 	}
-	defer l.Close()
 
+	defer l.Close()
 	Log.Verbose.Printf("backend server listening on port %v", Port)
 
 	for {
 		conn, _ := l.Accept()
 		go rpc.ServeConn(conn)
 	}
-
-	return Port, nil
 }
