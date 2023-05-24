@@ -24,46 +24,48 @@ func Connect(Port uint16) error {
 
 	Client.Call("Module.OnInit", nil, IncomingResponse)
 
-	if IncomingResponse.IsSuccess {
-		return nil
+	if !IncomingResponse.IsSuccess {
+		return errors.New("the remote module failed to initialize")
 	}
+
+	return nil
 }
 
-func DeployBackend(RemoteModuleInfo IChatanium.ModuleInfo, Backend IChatanium.Backend) (error, uint16) {
+func DeployBackend(RemoteModuleInfo IChatanium.ModuleInfo, Backend IChatanium.Backend) (uint16, error) {
 	Log.Verbose.Printf("Deploying Backend: %s", RemoteModuleInfo.Name)
 
 	var Random interface{} = rand.Intn(math.MaxUint16) + 1
 	Port, ok := Random.(uint16)
-	if ok != true {
-		return errors.New("The automatically created port number does not fit the port range. Please try again."), 0
+	if !ok {
+		return 0, errors.New("the automatically created port number does not fit the port range. Please try again")
 	}
 
-	Log.Verbose.Printf("Port: %s", Port)
+	Log.Verbose.Printf("port: %v", Port)
 
 	if err := Backend.Init(RemoteModuleInfo); err != nil {
-		return err, 0
+		return 0, err
 	}
 
 	if err := Backend.Connect(); err != nil {
-		return err, 0
+		return 0, err
 	}
 
 	if err := rpc.Register(Backend); err != nil {
-		return err, 0
+		return 0, err
 	}
 
 	l, err := net.Listen("tcp", fmt.Sprintf(":%v", &Port))
 	if err != nil {
-		return err, 0
+		return 0, err
 	}
 	defer l.Close()
 
-	Log.Verbose.Printf("Backend Server listening on port %s.", Port)
+	Log.Verbose.Printf("backend server listening on port %v", Port)
 
 	for {
 		conn, _ := l.Accept()
 		go rpc.ServeConn(conn)
 	}
 
-	return nil, Port
+	return Port, nil
 }
